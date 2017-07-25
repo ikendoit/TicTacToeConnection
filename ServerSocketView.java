@@ -56,16 +56,14 @@ public class ServerSocketView{
     }
 
     public void forward(DataPackage data) throws IOException{ 
-       do { 
-           try { 
-               output.writeObject(data);
-               output.flush();
-               // process data
-               LOG.info("sending package");
-           } catch (Exception e ){
-               e.printStackTrace();
-           }
-       } while ( !data.getCommand().equals("END"));
+	   try { 
+	       output.writeObject(data);
+	       output.flush();
+	       // process data
+	       LOG.info("sending package");
+	   } catch (Exception e ){
+	       e.printStackTrace();
+	   }
         
     }
 

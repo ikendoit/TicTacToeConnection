@@ -12,18 +12,32 @@ public class GUIView extends JFrame implements View{
 
     private static Player player;
     private Presenter presenter;
+    public ViewGUI view ; 
 
     //constructor
     public GUIView(Player player) { 
         this.player= player;
-        
-        setContentPane(new ViewGUI(player,presenter)) ; 
+	this.view = new ViewGUI(player) ;
+
+        setContentPane(view) ;  
     } 
 
-    //set presenter
-    public void setPresenter(Presenter presenter) { 
-        this.presenter = presenter; 
+    public void setButton(DataPackage data) { 
+	this.view.setButton(data); 
     }
+
+    public void setWin() { 
+	this.view.setWin(); 
+    }
+    
+    public void setDraw() {
+	this.view.setDraw();
+    }
+
+    //set presenter
+//    public void setPresenter(Presenter presenter) { 
+//        this.presenter = presenter; 
+//    }
 
     //implements interface View
     public Player who() {
@@ -56,11 +70,9 @@ public class GUIView extends JFrame implements View{
         private JButton resetScores;
         private JTextArea gameGuide; 
         private Player player;
-        private Presenter presenter;
 
-        public ViewGUI(Player player, Presenter presenter) { 
+        public ViewGUI(Player player) { 
             //instances
-            this.presenter = presenter;
             this.player = player;
             buttons = new JButton[3][3];
             reset = new JButton("Reset"); 
@@ -106,7 +118,7 @@ public class GUIView extends JFrame implements View{
                     Player playerThis = player; 
                     buttons[a][b].addActionListener(e -> {
 
-                         if (presenter.move(a,b,playerThis)) { 
+                         if ( isChosen(a,b) ) { 
                             setButton(new DataPackage(a,b,"",playerThis);
                             gameGuide.setText("the move is good");
                         } else { 
@@ -138,6 +150,14 @@ public class GUIView extends JFrame implements View{
             add(south);
 
         } 
+
+	//check board if filled ? 
+	public boolean isChosen(int x, int y) { 
+	    if ( board[x][y] != null) { 
+	        return true ; 
+	    } 
+	    return false; 
+	}
 
         //set the button from DataPackage
         public void setButton(DataPackage data) { 
