@@ -117,18 +117,18 @@ public class ClientPresenter implements Presenter {
 
         try { 
             ClientSocketAdapter socketView = new ClientSocketAdapter("localhost",port); 
+            GUIView guiView = new GUIView(Player.O);
+
+            ClientPresenter presenter = new ClientPresenter(guiView,socketView);
+
+            guiView.setPresenter(presenter);
+
+            guiView.showGame();
+
             socketView.startRunning();
         } catch (IOException e) { 
             e.printStackTrace();
         }
             
-        GUIView guiView = new GUIView(Player.O);
-
-        ClientPresenter presenter = new ClientPresenter(guiView,socketView);
-
-        guiView.setPresenter(presenter);
-
-        
-        guiView.showGame();
-	}
+ 	}
 }

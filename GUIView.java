@@ -12,21 +12,25 @@ public class GUIView extends JFrame implements View{
 
     private static Player player;
     private Presenter presenter;
+
+    //constructor
     public GUIView(Player player) { 
-
         this.player= player;
-        setContentPane(new ViewGUI(player, presenter) ) ; 
-
+        
+        setContentPane(new ViewGUI(player,presenter)) ; 
     } 
 
+    //set presenter
     public void setPresenter(Presenter presenter) { 
         this.presenter = presenter; 
     }
 
+    //implements interface View
     public Player who() {
         return this.player;
     }
 
+    //show game GUI
     public void showGame(){ 
         JFrame f = new GUIView(player) ; 
         f.setSize(450,600); 
@@ -37,6 +41,9 @@ public class GUIView extends JFrame implements View{
         f.setVisible(true); 
     } 
 
+    /**
+     * game Component, create and manage GUI board
+     */
     class ViewGUI extends JComponent { 
         private final JButton[][] buttons;
         private JButton reset ;
@@ -99,9 +106,9 @@ public class GUIView extends JFrame implements View{
                     Player playerThis = player; 
                     buttons[a][b].addActionListener(e -> {
 
-                        if (presenter.move(a,b,playerThis)) { 
-                            System.out.println("****************************"+playerThis.showID());
-                            buttons[a][b].setText(playerThis.showID());
+                         if (presenter.move(a,b,playerThis)) { 
+                            setButton(new DataPackage(a,b,"",playerThis);
+                            gameGuide.setText("the move is good");
                         } else { 
                             gameGuide.setText("invalid move, try again, please");
                         }
@@ -132,11 +139,23 @@ public class GUIView extends JFrame implements View{
 
         } 
 
-        public void updateGame(int row, int col, Player player) { 
+        //set the button from DataPackage
+        public void setButton(DataPackage data) { 
             this.gameGuide.setText("Turn of "+player.toggle());
-            this.buttons[row][col].setText(player.showID());
+            this.buttons[data.getX()][data.getY()].setText(data.getPlayer().showID());
         }
 
+        //set game Won
+        public void setWin(){
+            this.gameWon = true ; 
+        } 
+
+        //set game Drawn
+        public void setDraw() {
+            this.gameDraw = true ;
+        }
+
+        //end the game
         public void endGame(Player winner){ 
             if (gameWon) { 
                 this.gameGuide.setText("Game Over \n Player "+winner+" won");

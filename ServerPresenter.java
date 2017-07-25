@@ -14,6 +14,7 @@ public class ServerPresenter implements Presenter {
     private static View guiView ; 
     private static ServerSocketView socketView; 
 
+    //constructor
     public ServerPresenter(View guiView, ServerSocketView socketView) { 
         this.guiView = guiView; 
         this.socketView = socketView; 
@@ -35,6 +36,7 @@ public class ServerPresenter implements Presenter {
         }
     }
 
+    //check win 
     private void checkWin(int row, int col) { 
         if (checkWinStraight(row,col) || checkWinDiagonal()) { 
             System.out.println("we have a WINNER"); 
@@ -90,13 +92,16 @@ public class ServerPresenter implements Presenter {
         return true;
     }
 
+    //make a move, check legitimacy, update GUI
     public boolean move(int x,int y, Player player){
         if ( board[x][y] == Player.NONE) {
 
             board[x][y]= player; 
             checkGameState(x,y);
+
             try { 
-                socketView.forward(new DataPackage(x,y,"",player));
+               DataPackage data = new DataPackage(x,y,"",player);
+               socketView.forward(data);
             } catch (IOException e){ 
                 e.printStackTrace();
             }
@@ -125,20 +130,20 @@ public class ServerPresenter implements Presenter {
 
         try { 
             ServerSocketView socketView = new ServerSocketView(port);
+            GUIView guiView = new GUIView(Player.X);
+
+            ServerPresenter presenter = new ServerPresenter(guiView,socketView);
+
+            guiView.setPresenter(presenter);
+
+            guiView.showGame();
+
+            socketView.startRunning();
         } catch (IOException e) { 
             e.printStackTrace();
         }
             
-        GUIView guiView = new GUIView(Player.X);
-
-        ServerPresenter presenter = new ServerPresenter(guiView,socketView);
-
-        guiView.setPresenter(presenter);
-
-        socketView.startRunning();
-        guiView.showGame();
-
-
+        
     }
 }
 

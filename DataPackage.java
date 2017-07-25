@@ -2,13 +2,13 @@ public class DataPackage {
     private int x ; 
     private int y ; 
     private String command ; 
-    private Player playerID ; 
+    private Player player ; 
 
-    public DataPackage(int x, int y, String command, Player playerID){
+    public DataPackage(int x, int y, String command, Player player){
         this.x = x ;
         this.y = y ; 
         this.command = command ; 
-        this.playerID = playerID;
+        this.player = player;
     } 
 
     public int getX(){
@@ -24,7 +24,7 @@ public class DataPackage {
     } 
     
     public Player getPlayer(){
-        return playerID; 
+        return player; 
     }
 }
 

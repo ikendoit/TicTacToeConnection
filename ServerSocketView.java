@@ -13,9 +13,11 @@ public class ServerSocketView{
     private ServerSocket server;
     private Socket connection ;
     private DataPackage data;
+    private Presenter presenter;
 
-    public ServerSocketView(int port) throws IOException {
+    public ServerSocketView(int port , Presenter presenter) throws IOException {
         data = new DataPackage(-1,-1,"",Player.X);
+        this.presenter = presenter;
         LOG.info("starting server socket view");
         server = new ServerSocket(DEFAULT_PORT, DEFAULT_POOL);
         LOG.info("started server socket view");
@@ -23,9 +25,9 @@ public class ServerSocketView{
 
     public void startRunning() { 
         try { 
-            establishConnection();
-            establishStreams();
-            while (!data.getCommand().equals("END")){
+            while (true){
+                establishConnection();
+                establishStreams();
                 forward(data);  //add data
                 receive();
             }
@@ -71,6 +73,7 @@ public class ServerSocketView{
         do { 
             try { 
                 data = (DataPackage)input.readObject();
+                presenter.move(data);
                 LOG.info("reading package");
                 //process data
                 return data;
