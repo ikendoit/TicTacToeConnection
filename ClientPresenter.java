@@ -1,106 +1,122 @@
 import java.io.IOException;
-import static javax.swing.SwingUtilities.invokeLater;
+import java.io.EOFException;
 
+/**
+ * client presenter: present game for client, check validity of moves
+ *   use socket to receive and forward data, check game states, hold a
+ *   copy of the game.
+ * @author Trung Kien Nguyen
+ * @id 100284963
+ * @professor Jeremy Hilliker 
+ * @course CPSC 1181 - 002
+ * @school Langara Colllege
+ * @date 27th July, 2017 
+ * @version 1.0
+ */
+
+
+//Client presenter - connect Socketclient with GUI
 public class ClientPresenter implements Presenter { 
     private static final int DEFAULT_PORT = 9999; 
     private int port;
+
     private Player[][] board; 
     private Player whosMove;
-    private Player win; 
-    private Player winner ; 
     private int[] score;
-    private static View guiView ; 
-    private static ClientSocketAdapter socketView; 
-    private static ServerPresenter server ; 
+    private GUIView guiView ; 
+    private ClientSocketAdapter socketView; 
 
-    public ClientPresenter(View guiView, ClientSocketAdapter socketView, ServerPresenter server) { 
+    /**
+     * constructor: register GUIView and client socket 
+     * @params guiView to be passed in as GUIView
+     * @params socketView to be passed in as clientSocketAdapter
+     */
+    public ClientPresenter(GUIView guiView, ClientSocketAdapter socketView) { 
         this.guiView = guiView; 
         this.socketView = socketView; 
-	this.server = server; 
         board = new Player[3][3];
         score = new int[2];
-
     }
-
-    @Override
-    public boolean move(int x,int y, Player player){
-        if ( board[x][y] == null) {
-
-            board[x][y]= player; 
-            checkGameState(x,y);
-            try { 
-                socketView.forward(new DataPackage(x,y,"",player));
-            } catch ( IOException e) { 
-                e.printStackTrace();
-            }
-            return true ; 
-
-        }
-        return false;
-    }
-
-    public void deferToServer(int x, int y, Player player ) { 
-	return server.checkLegible(x,y) ; 
-    }
-	
-	    
-
-    // check game results;
-    public void checkGameState(int row, int col) { 
-        checkWin(row , col);
-        if ( checkDraw()) { 
-            System.out.println("DRAWN GAME, DRAWN GAME");
-        }
-    }
-
-    private void checkWin(int row, int col) { 
+  //******************CHECK GAME STATE*****************
+     /**
+     * checkWin at position of play
+     * @params row : row position
+     * @params col : col position
+     * @return boolean : there is a winner
+     */
+    private boolean checkWin(int row, int col) { 
         if (checkWinStraight(row,col) || checkWinDiagonal()) { 
             System.out.println("we have a WINNER"); 
+            return true;
         } else { 
-            System.out.println("no winner yet ") ;
+            return false;
         } 
     }
 
+    /**
+     * checkWin in straightlines 
+     * @params row position
+     * @params col position
+     * @return boolean: there is a winner
+     */
     private boolean checkWinStraight(int row, int col) { 
-        boolean gameDone = false;
+        boolean gameDoneVert = false;
+        boolean gameDoneHor = false;
 
         Player player = board[row][col];  
         for (int i = 0 ; i < 3 ; i ++ ) { 
             if (player == board[row][i]) {
-                gameDone = true ; 
+                gameDoneVert = true ; 
             } else {
-                gameDone = false;
+                gameDoneVert = false;
                 break; 
             } 
         }
 
         for (int i = 0 ; i < 3 ; i ++) { 
             if (player == board[i][col]) {
-                gameDone = true ; 
+                gameDoneHor = true ; 
             } else { 
-                gameDone = false ; 
+                gameDoneHor = false ; 
                 break ;  
             }  
         }
-        return gameDone;
+        if (gameDoneVert ) {
+            System.out.println("Won in Vertical");
+            return gameDoneVert;
+        }
+        if (gameDoneHor ) { 
+            System.out.println("Won in Horizontal");
+            return gameDoneHor;
+        }
+        return false;
+
     } 
 
+    /**
+     * check win in diagonal 
+     * @return boolean: there is a winner
+     */
     private boolean checkWinDiagonal(){ 
-        if ((board[0][0]  == board[1][1]   && 
+        if (board[1][1] != null            &&
+            ((board[0][0]  == board[1][1]   && 
             board[1][1]  == board[2][2]  ) ||
             (board[1][1]  == board[0][2]   &&
-            board[1][1]   == board[2][0]  )) {
+            board[1][1]   == board[2][0]  ))) {
 
-            System.out.println("won in diagonal"); 
             return true ;
         }
         return false;      
     }
  
+    /**
+     * check if the game is drawn
+     * @return boolean: drawn game
+     */
     private boolean checkDraw(){
         for ( int i = 0 ; i < 3 ; i ++) { 
             for ( int j = 0 ; j < 3 ; j++ ) { 
-                if (board[i][j] == null){  
+                if (board[i][j] != null){  
                     return false; 
                 } 
             }
@@ -108,34 +124,112 @@ public class ClientPresenter implements Presenter {
         return true;
     }
  
-    public void registerPropertyChangeListener(){
-    } 
+  //******************Client Presenter functions***************
+ 
+    /**
+     * return PLayer ID of the client
+     * @return player : client
+     */
+    public Player getPlayer(){
+        return Player.O;
+    }
+
+    /**
+     * reset the game
+     */
+    public void resetGame(){
+        board = new Player[3][3];
+    }
+
+    /**
+     * make a move from a datapackage when client makes a move
+     * then forward data to host
+     * @params Datapackage to move and forward
+     * @return boolean: operation is successful
+     */
+    @Override 
+    public boolean move(DataPackage data) throws IOException{
+        int x = data.getX();
+        int y = data.getY();
+        if ( board[x][y] == null ) {
+
+            board[x][y]= data.getPlayer(); 
+            if (checkWin(x,y)){ 
+                data.setCommand(data.getPlayer().getID());
+                guiView.setWin();
+                guiView.endGame(data.getPlayer());
+            }
+            if (checkDraw()){
+                data.setCommand("DRAW");
+                guiView.setDraw();
+                guiView.endGame(data.getPlayer());
+            } 
+            guiView.parseData(data);
+            socketView.forward(data);
+            
+            return true ; 
+        }
+        return false;
+    }
+
+    /**
+     * update the gui when host makes a move 
+     * @params DataPackge : sent bu host when they make a move
+     * @return boolean operation successful
+     */
+    public boolean moveFromReceive(DataPackage data) throws IOException { 
+        int x = data.getX();
+        int y = data.getY() ; 
+        if (board[x][y] == null ) { 
+            board[x][y] = data.getPlayer();
+            if (checkWin(x,y)){ 
+                data.setCommand(data.getPlayer().getID());
+                guiView.setWin();
+                guiView.endGame(data.getPlayer());
+            }
+            if (checkDraw()){
+                data.setCommand("DRAW");
+                guiView.setDraw();
+                guiView.endGame(data.getPlayer());
+            } 
+            guiView.parseData(data); 
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * start a new game on the client side
+     */
+    public void newGame() throws Exception{
+        guiView.showGame();
+        socketView.startRunning();
+    }
     
-    public void newGame(){
-      // add new game statements 
-     }
-    
-    
-    public static void main(String[] array) throws IOException{
-//		if (array.length >= 1){
-//			new ClientPresenter(Integer.parseInt(array[0])).newGame();
-//		} //note: implement constructor later  
+    /**
+     * start Client Presenter
+     * @params String host name of server
+     * @params integer port of server
+     */
+    public static void presentGame(String host,int port) throws IOException{
 
-		int port = DEFAULT_PORT; 
+		try ( ClientSocketAdapter socketView = new ClientSocketAdapter(host,port); 
+              GUIView guiView = new GUIView(Player.O)) {
 
-		try { 
-		    ClientSocketAdapter socketView = new ClientSocketAdapter("localhost",port); 
-		    GUIView guiView = new GUIView(Player.O);
+            ClientPresenter presenter = new ClientPresenter(guiView,socketView);
+            
+            guiView.setPresenter(presenter);
 
-		    ClientPresenter presenter = new ClientPresenter(guiView,socketView);
+            socketView.setPresenter(presenter);
 
-		    guiView.setPresenter(presenter);
+            presenter.newGame();
 
-		    guiView.showGame();
-
-		    socketView.startRunning();
-		} catch (IOException e) { 
+		} catch (Exception e) { 
+            if (e instanceof EOFException){
+                System.out.println("Disconnected");
+            }
 		    e.printStackTrace();
+            
 		}
 		    
  	}
