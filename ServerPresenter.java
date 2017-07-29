@@ -92,6 +92,7 @@ public class ServerPresenter implements Presenter {
         int y = data.getY() ;
         if ( model.isAvailable(data) ){ 
             model.set(data);
+
             if (model.checkWin(x,y)) {
                 data.setCommand(data.getPlayer().getID());
                 guiView.setWin();
@@ -112,10 +113,8 @@ public class ServerPresenter implements Presenter {
      * start a new game on the server side
      */
     public void newGame() throws Exception{
-        System.out.println("line 61 server presenter");
         guiView.showGame();
         socketView.startRunning();
-        System.out.println("line 63 server presenter");
     }
     
     /**

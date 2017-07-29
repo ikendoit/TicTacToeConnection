@@ -92,7 +92,7 @@ public class GUIView extends JFrame implements View, AutoCloseable{
         initButton();
             
         //init reset  button
-        resetBoard();
+//        resetBoard();
 
         //South east : chat + game guide
         scoreBoard.setBorder(new LineBorder(Color.GRAY));
@@ -121,7 +121,7 @@ public class GUIView extends JFrame implements View, AutoCloseable{
      */
     public void parseData(DataPackage data) throws IOException { 
         if (data.getCommand() == "RESET"){
-            resetBoard();
+//            resetBoard();
         }
         if (!isChosen(data.getX(),data.getY())){
             setButton(data);
@@ -208,58 +208,58 @@ public class GUIView extends JFrame implements View, AutoCloseable{
         }
     } 
 
-    /**
-     * reset the game board
-     */
-    public void resetBoard(){
-        
-        String command = "RESET";
-        DataPackage dataButton = new DataPackage(0,0,command,player);
-
-        reset.addActionListener( (e) -> { 
-            reset.setText("RESETING.....");
-            System.out.println("reseting the game");
-            reset.setText("Reset Game");
-            
-        });
-
-       reset.addPropertyChangeListener(new PropertyChangeListener() { 
-           @Override
-           public void propertyChange(PropertyChangeEvent event ) { 
-               for (int i = 0 ; i < 3 ; i ++) {
-                   for (int j = 0 ; j < 3 ; j ++) { 
-                       buttons[i][j].setText(" ");
-                   }
-               }
-               gameGuide.setText("game has been reset");
-
-               String property = event.getPropertyName(); 
-               if (serverPresenter != null ) { 
-                   if ("text" == property ) {
-                       try { 
-                           System.out.println("reseting in server");
-                           serverPresenter.resetGame();
-                           serverPresenter.move(dataButton);
-                       } catch (IOException e) { 
-                           e.printStackTrace();
-                           System.out.println("exception at 113 - GUI");
-                       }
-                   }
-               } else if (clientPresenter != null ){ 
-                   if ("text" == property ){
-                       try  {
-                           System.out.println("reseting in client");
-                           clientPresenter.resetGame();
-                           clientPresenter.move(dataButton);
-                       } catch (IOException e){ 
-                           e.printStackTrace();
-                       }
-                   }
-               }
-           }
-       });
-
-    }
+//    /**
+//     * reset the game board
+//     */
+//    public void resetBoard(){
+//        
+//        String command = "RESET";
+//        DataPackage dataButton = new DataPackage(0,0,command,player);
+//
+//        reset.addActionListener( (e) -> { 
+//            reset.setText("RESETING.....");
+//            System.out.println("reseting the game");
+//            reset.setText("Reset Game");
+//            
+//        });
+//
+//       reset.addPropertyChangeListener(new PropertyChangeListener() { 
+//           @Override
+//           public void propertyChange(PropertyChangeEvent event ) { 
+//               for (int i = 0 ; i < 3 ; i ++) {
+//                   for (int j = 0 ; j < 3 ; j ++) { 
+//                       buttons[i][j].setText(" ");
+//                   }
+//               }
+//               gameGuide.setText("game has been reset");
+//
+//               String property = event.getPropertyName(); 
+//               if (serverPresenter != null ) { 
+//                   if ("text" == property ) {
+//                       try { 
+//                           System.out.println("reseting in server");
+//                           serverPresenter.resetGame();
+//                           serverPresenter.move(dataButton);
+//                       } catch (IOException e) { 
+//                           e.printStackTrace();
+//                           System.out.println("exception at 113 - GUI");
+//                       }
+//                   }
+//               } else if (clientPresenter != null ){ 
+//                   if ("text" == property ){
+//                       try  {
+//                           System.out.println("reseting in client");
+//                           clientPresenter.resetGame();
+//                           clientPresenter.move(dataButton);
+//                       } catch (IOException e){ 
+//                           e.printStackTrace();
+//                       }
+//                   }
+//               }
+//           }
+//       });
+//
+//    }
 
   //********************SET METHODS******************
    
