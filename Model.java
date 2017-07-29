@@ -15,7 +15,6 @@ import java.io.*;
 
 public class Model {
     //Player[] board ; 
-    public int[] score ; 
     public Player win ; 
     public Player winner; 
     public Player whosMove; 
@@ -25,7 +24,6 @@ public class Model {
      * construct the model
      */
     public Model() { 
-        score = new int[2] ; 
         board = new Player[3][3]; 
     }
 
@@ -35,8 +33,8 @@ public class Model {
      * @params integer: col position
      * @return player: player at the specified position
      */
-    public Player get(int row, int col){
-        return board[row][col]; 
+    public Player get(DataPackage data){
+        return board[data.getX()][data.getY()]; 
     }
 
     /**
@@ -146,12 +144,11 @@ public class Model {
     public boolean checkDraw(){
         for ( int i = 0 ; i < 3 ; i ++) { 
             for ( int j = 0 ; j < 3 ; j++ ) { 
-                if (board[i][j] != null){ 
+                if (board[i][j] == null){ 
                     return false; 
                 } 
             }
         }
-        System.out.println("we have a DRAW");
         return true;
     }
 

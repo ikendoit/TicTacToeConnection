@@ -134,6 +134,7 @@ public class ServerSocketView implements AutoCloseable{
     /**
      * receive data package from client and process them
      * with server presenter
+     * stall server's moves until client makes one
      */
     public void receive() throws IOException { 
           try { 

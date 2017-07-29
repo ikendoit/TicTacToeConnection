@@ -22,7 +22,6 @@ public class ClientPresenter implements Presenter {
 
     private Player[][] board; 
     private Player whosMove;
-    private int[] score;
     private GUIView guiView ; 
     private ClientSocketAdapter socketView; 
 
@@ -35,9 +34,23 @@ public class ClientPresenter implements Presenter {
         this.guiView = guiView; 
         this.socketView = socketView; 
         board = new Player[3][3];
-        score = new int[2];
     }
   //******************CHECK GAME STATE*****************
+
+    /**
+     * debug show board 
+     */
+    public void debug(){
+        for (int i = 0 ; i < 3  ; i++) {
+            for (int j = 0 ; j <3 ; j ++){
+                if (board[i][j] == null){
+                    System.out.print(" .");
+                } else 
+                System.out.print(" "+board[i][j].getID());
+            }
+            System.out.println();
+        }
+    }
      /**
      * checkWin at position of play
      * @params row : row position
@@ -82,11 +95,9 @@ public class ClientPresenter implements Presenter {
             }  
         }
         if (gameDoneVert ) {
-            System.out.println("Won in Vertical");
             return gameDoneVert;
         }
         if (gameDoneHor ) { 
-            System.out.println("Won in Horizontal");
             return gameDoneHor;
         }
         return false;
@@ -151,20 +162,25 @@ public class ClientPresenter implements Presenter {
     public boolean move(DataPackage data) throws IOException{
         int x = data.getX();
         int y = data.getY();
+        if (data.getCommand().equals("RESET")){
+            socketView.forward(data);
+            return true;
+        }
         if ( board[x][y] == null ) {
 
             board[x][y]= data.getPlayer(); 
             if (checkWin(x,y)){ 
                 data.setCommand(data.getPlayer().getID());
+                guiView.addScore(data.getPlayer());
                 guiView.setWin();
                 guiView.endGame(data.getPlayer());
-            }
-            if (checkDraw()){
+            }else if (checkDraw()){
                 data.setCommand("DRAW");
                 guiView.setDraw();
                 guiView.endGame(data.getPlayer());
             } 
-            guiView.parseData(data);
+            System.out.println("line 198 client presenter");
+            debug();
             socketView.forward(data);
             
             return true ; 
@@ -178,24 +194,19 @@ public class ClientPresenter implements Presenter {
      * @return boolean operation successful
      */
     public boolean moveFromReceive(DataPackage data) throws IOException { 
+        System.out.println("moving from receive - client");
         int x = data.getX();
         int y = data.getY() ; 
-	if (data.getCommand()=="RESET") { 
-	    resetGame();
-	    return true;
-	} else if (board[x][y] == null ) { 
+        if (data.getCommand().equals("RESET")) { 
+            guiView.parseData(data);
+            resetGame();
+            return true;
+        } else if (board[x][y] == null ) { 
+
             board[x][y] = data.getPlayer();
-            if (checkWin(x,y)){ 
-                data.setCommand(data.getPlayer().getID());
-                guiView.setWin();
-                guiView.endGame(data.getPlayer());
-            }
-            if (checkDraw()){
-                data.setCommand("DRAW");
-                guiView.setDraw();
-                guiView.endGame(data.getPlayer());
-            } 
             guiView.parseData(data); 
+            System.out.println("line 234 client presenter");
+            debug();
             return true;
         }
         return false;
@@ -216,8 +227,8 @@ public class ClientPresenter implements Presenter {
      */
     public static void presentGame(String host,int port) throws IOException{
 
-	try ( ClientSocketAdapter socketView = new ClientSocketAdapter(host,port); 
-              GUIView guiView = new GUIView(Player.O)) {
+        try ( ClientSocketAdapter socketView = new ClientSocketAdapter(host,port); 
+                  GUIView guiView = new GUIView(Player.O)) {
 
             ClientPresenter presenter = new ClientPresenter(guiView,socketView);
             
@@ -227,13 +238,13 @@ public class ClientPresenter implements Presenter {
 
             presenter.newGame();
 
-	} catch (Exception e) { 
+        } catch (Exception e) { 
             if (e instanceof EOFException){
                 System.out.println("Disconnected");
             }
-	    e.printStackTrace();
-            
-	}
+            e.printStackTrace();
+                
+        }
 		    
     }
 }

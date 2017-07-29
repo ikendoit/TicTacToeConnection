@@ -33,6 +33,23 @@ public class ServerPresenter implements Presenter {
         this.guiView = guiView; 
     }
 
+
+    /**
+     * debug show board 
+     */
+    public void debug(){
+        for (int i = 0 ; i < 3  ; i++) {
+            for (int j = 0 ; j <3 ; j ++){
+                DataPackage data2 = new DataPackage(i,j,"",Player.X);
+                if (model.isAvailable(data2) ){
+                    System.out.print(" .");
+                } else
+                System.out.print(" "+model.get(data2).getID());
+            }
+            System.out.println();
+        }
+    }
+
     /**
      * reset the game
      */
@@ -56,26 +73,27 @@ public class ServerPresenter implements Presenter {
     public boolean move(DataPackage data) throws IOException{
         int x = data.getX();
         int y = data.getY();
-        System.out.println(guiView.getCurrentPlayer());
-        if ( model.isAvailable(data)  ){ 
+        if (data.getCommand().equals("RESET")){
+            socketView.forward(data);
+            return true;
+        }
+        if (model.isAvailable(data)  ){ 
             model.set(data);
 
             if (model.checkWin(x,y)) {
                 data.setCommand(data.getPlayer().getID());
+                guiView.addScore(data.getPlayer());
                 guiView.setWin();
                 guiView.endGame(data.getPlayer());
-            }
-            if (model.checkDraw()) {
+            } else if (model.checkDraw()) {
                 data.setCommand("DRAW");
                 guiView.setDraw();
                 guiView.endGame(data.getPlayer());
             }
-            System.out.println(data.getPlayer().getID());
-
-            guiView.parseData(data);
-
             socketView.forward(data);
 
+            System.out.println("line 96 server presenter");
+            debug();
             return true ; 
         }
         return false;
@@ -88,26 +106,18 @@ public class ServerPresenter implements Presenter {
      * @return boolean : operation successful
      */
     public boolean moveFromReceive(DataPackage data) throws IOException { 
+        System.out.println("moving from receive - server");
         int x = data.getX();
         int y = data.getY() ;
-	if (data.getCommand() == "RESET"){
-   	    resetGame();
-	    return true;
-	} else if ( model.isAvailable(data) ){ 
-            model.set(data);
-
-            if (model.checkWin(x,y)) {
-                data.setCommand(data.getPlayer().getID());
-                guiView.setWin();
-                guiView.endGame(data.getPlayer());
-            }
-            if (model.checkDraw()) {
-                data.setCommand("DRAW");
-                guiView.setDraw();
-                guiView.endGame(data.getPlayer());
-            }
-
+        if (data.getCommand().equals("RESET")){
             guiView.parseData(data);
+            resetGame();
+            return true;
+        } else if ( model.isAvailable(data) ){ 
+            model.set(data);
+            guiView.parseData(data);
+            System.out.println("line 133 server presenter");
+            debug();
             return true;
         }
         return false;
@@ -135,7 +145,7 @@ public class ServerPresenter implements Presenter {
 
             socketView.setPresenter(presenter);
             presenter.newGame();
-       } catch (Exception e) { 
+        } catch (Exception e) { 
             if (e instanceof EOFException){ 
                System.out.println("Client has shutdown");
             }
