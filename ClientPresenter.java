@@ -180,7 +180,10 @@ public class ClientPresenter implements Presenter {
     public boolean moveFromReceive(DataPackage data) throws IOException { 
         int x = data.getX();
         int y = data.getY() ; 
-        if (board[x][y] == null ) { 
+	if (data.getCommand()=="RESET") { 
+	    resetGame();
+	    return true;
+	} else if (board[x][y] == null ) { 
             board[x][y] = data.getPlayer();
             if (checkWin(x,y)){ 
                 data.setCommand(data.getPlayer().getID());
@@ -213,7 +216,7 @@ public class ClientPresenter implements Presenter {
      */
     public static void presentGame(String host,int port) throws IOException{
 
-		try ( ClientSocketAdapter socketView = new ClientSocketAdapter(host,port); 
+	try ( ClientSocketAdapter socketView = new ClientSocketAdapter(host,port); 
               GUIView guiView = new GUIView(Player.O)) {
 
             ClientPresenter presenter = new ClientPresenter(guiView,socketView);
@@ -224,13 +227,13 @@ public class ClientPresenter implements Presenter {
 
             presenter.newGame();
 
-		} catch (Exception e) { 
+	} catch (Exception e) { 
             if (e instanceof EOFException){
                 System.out.println("Disconnected");
             }
-		    e.printStackTrace();
+	    e.printStackTrace();
             
-		}
+	}
 		    
- 	}
+    }
 }

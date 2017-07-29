@@ -90,7 +90,10 @@ public class ServerPresenter implements Presenter {
     public boolean moveFromReceive(DataPackage data) throws IOException { 
         int x = data.getX();
         int y = data.getY() ;
-        if ( model.isAvailable(data) ){ 
+	if (data.getCommand() == "RESET"){
+   	    resetGame();
+	    return true;
+	} else if ( model.isAvailable(data) ){ 
             model.set(data);
 
             if (model.checkWin(x,y)) {

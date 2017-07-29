@@ -105,7 +105,7 @@ public class GUIView extends JFrame implements View, AutoCloseable{
 
         north.add(northEast);
 
-       //South panel: Start game + reset scores
+        //South panel: Start game + reset scores
         south.add(reset); 
         south.add(resetScores);
 
@@ -147,10 +147,10 @@ public class GUIView extends JFrame implements View, AutoCloseable{
      * @return boolean : the position is chosen
      */
 	public boolean isChosen(int x, int y) { 
-	    if ( buttons[x][y].getText() == " ") { 
-	        return false ; 
-	    } 
-	    return true; 
+		if ( buttons[x][y].getText() == " ") { 
+			return false ; 
+		} 
+		return true; 
     }
 
   //********************INIT BUTTONS *************************
@@ -260,7 +260,6 @@ public class GUIView extends JFrame implements View, AutoCloseable{
 //       });
 //
 //    }
-
   //********************SET METHODS******************
    
     /**
