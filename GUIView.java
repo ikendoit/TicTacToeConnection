@@ -105,7 +105,7 @@ public class GUIView extends JFrame implements View, AutoCloseable{
 
         north.add(northEast);
 
-       //South panel: Start game + reset scores
+        //South panel: Start game + reset scores
         south.add(reset); 
         south.add(resetScores);
 
@@ -122,6 +122,7 @@ public class GUIView extends JFrame implements View, AutoCloseable{
     public void parseData(DataPackage data) throws IOException { 
         if (data.getCommand() == "RESET"){
             resetBoard();
+	    	return;
         }
         if (!isChosen(data.getX(),data.getY())){
             setButton(data);
@@ -147,10 +148,10 @@ public class GUIView extends JFrame implements View, AutoCloseable{
      * @return boolean : the position is chosen
      */
 	public boolean isChosen(int x, int y) { 
-	    if ( buttons[x][y].getText() == " ") { 
-	        return false ; 
-	    } 
-	    return true; 
+		if ( buttons[x][y].getText() == " ") { 
+			return false ; 
+		} 
+		return true; 
     }
 
   //********************INIT BUTTONS *************************
@@ -210,6 +211,7 @@ public class GUIView extends JFrame implements View, AutoCloseable{
 
     /**
      * reset the game board
+	 * NEED: change to RESET BOARD BUTTON
      */
     public void resetBoard(){
         
@@ -240,6 +242,7 @@ public class GUIView extends JFrame implements View, AutoCloseable{
                            System.out.println("reseting in server");
                            serverPresenter.resetGame();
                            serverPresenter.move(dataButton);
+			   currentPlayer = Player.X;
                        } catch (IOException e) { 
                            e.printStackTrace();
                            System.out.println("exception at 113 - GUI");
@@ -251,10 +254,12 @@ public class GUIView extends JFrame implements View, AutoCloseable{
                            System.out.println("reseting in client");
                            clientPresenter.resetGame();
                            clientPresenter.move(dataButton);
+			   currentPlayer =Player.X; 
                        } catch (IOException e){ 
                            e.printStackTrace();
                        }
                    }
+
                }
            }
        });
