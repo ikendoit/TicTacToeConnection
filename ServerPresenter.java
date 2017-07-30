@@ -33,23 +33,6 @@ public class ServerPresenter implements Presenter {
         this.guiView = guiView; 
     }
 
-
-    /**
-     * debug show board 
-     */
-    public void debug(){
-        for (int i = 0 ; i < 3  ; i++) {
-            for (int j = 0 ; j <3 ; j ++){
-                DataPackage data2 = new DataPackage(i,j,"",Player.X);
-                if (model.isAvailable(data2) ){
-                    System.out.print(" .");
-                } else
-                System.out.print(" "+model.get(data2).getID());
-            }
-            System.out.println();
-        }
-    }
-
     /**
      * reset the game
      */
@@ -73,7 +56,7 @@ public class ServerPresenter implements Presenter {
     public boolean move(DataPackage data) throws IOException{
         int x = data.getX();
         int y = data.getY();
-        if (data.getCommand().equals("RESET")){
+        if (data.getCommand().equals("RESET") || data.getCommand().equals("RESETSCORE")){
             socketView.forward(data);
             return true;
         }
@@ -81,6 +64,7 @@ public class ServerPresenter implements Presenter {
             model.set(data);
 
             if (model.checkWin(x,y)) {
+                System.out.println("server presenter-84 current prob");
                 data.setCommand(data.getPlayer().getID());
                 guiView.addScore(data.getPlayer());
                 guiView.setWin();
@@ -92,8 +76,6 @@ public class ServerPresenter implements Presenter {
             }
             socketView.forward(data);
 
-            System.out.println("line 96 server presenter");
-            debug();
             return true ; 
         }
         return false;
@@ -113,11 +95,12 @@ public class ServerPresenter implements Presenter {
             guiView.parseData(data);
             resetGame();
             return true;
+        } else if (data.getCommand().equals("RESETSCORE")){
+            guiView.parseData(data);
+            return true;
         } else if ( model.isAvailable(data) ){ 
             model.set(data);
             guiView.parseData(data);
-            System.out.println("line 133 server presenter");
-            debug();
             return true;
         }
         return false;

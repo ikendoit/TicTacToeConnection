@@ -109,11 +109,9 @@ public class Model {
             } 
         }
         if (gameDoneVert ) {
-            System.out.println("Won in Vertical");
             return gameDoneVert;
         }
         if (gameDoneHor ) { 
-            System.out.println("Won in Horizontal");
             return gameDoneHor;
         }
         return false;

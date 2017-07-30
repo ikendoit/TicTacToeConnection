@@ -141,7 +141,6 @@ public class ServerSocketView implements AutoCloseable{
                do { 
                    while (data == null ) {
                        data = (DataPackage)input.readObject();
-                       System.out.println("loop at 117");
                    }
                    LOG.info("reading package from client : CHECK");
                    System.out.println("check 113- receive of server socket: "+presenter.moveFromReceive(data));

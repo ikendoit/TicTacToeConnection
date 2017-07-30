@@ -37,20 +37,6 @@ public class ClientPresenter implements Presenter {
     }
   //******************CHECK GAME STATE*****************
 
-    /**
-     * debug show board 
-     */
-    public void debug(){
-        for (int i = 0 ; i < 3  ; i++) {
-            for (int j = 0 ; j <3 ; j ++){
-                if (board[i][j] == null){
-                    System.out.print(" .");
-                } else 
-                System.out.print(" "+board[i][j].getID());
-            }
-            System.out.println();
-        }
-    }
      /**
      * checkWin at position of play
      * @params row : row position
@@ -127,7 +113,7 @@ public class ClientPresenter implements Presenter {
     private boolean checkDraw(){
         for ( int i = 0 ; i < 3 ; i ++) { 
             for ( int j = 0 ; j < 3 ; j++ ) { 
-                if (board[i][j] != null){  
+                if (board[i][j] == null){  
                     return false; 
                 } 
             }
@@ -162,14 +148,15 @@ public class ClientPresenter implements Presenter {
     public boolean move(DataPackage data) throws IOException{
         int x = data.getX();
         int y = data.getY();
-        if (data.getCommand().equals("RESET")){
+        if (data.getCommand().equals("RESET") || data.getCommand().equals("RESETSCORE")){
             socketView.forward(data);
             return true;
         }
         if ( board[x][y] == null ) {
-
             board[x][y]= data.getPlayer(); 
+
             if (checkWin(x,y)){ 
+                System.out.println("173 prob client presenter");
                 data.setCommand(data.getPlayer().getID());
                 guiView.addScore(data.getPlayer());
                 guiView.setWin();
@@ -179,8 +166,6 @@ public class ClientPresenter implements Presenter {
                 guiView.setDraw();
                 guiView.endGame(data.getPlayer());
             } 
-            System.out.println("line 198 client presenter");
-            debug();
             socketView.forward(data);
             
             return true ; 
@@ -195,18 +180,15 @@ public class ClientPresenter implements Presenter {
      */
     public boolean moveFromReceive(DataPackage data) throws IOException { 
         System.out.println("moving from receive - client");
-        int x = data.getX();
+        int x = data.getX() ;
         int y = data.getY() ; 
-        if (data.getCommand().equals("RESET")) { 
+        if (data.getCommand().equals("RESET") || data.getCommand().equals("RESETSCORE")) { 
             guiView.parseData(data);
             resetGame();
             return true;
         } else if (board[x][y] == null ) { 
-
             board[x][y] = data.getPlayer();
             guiView.parseData(data); 
-            System.out.println("line 234 client presenter");
-            debug();
             return true;
         }
         return false;

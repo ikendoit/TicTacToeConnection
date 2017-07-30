@@ -40,7 +40,7 @@ public class GUIView extends JFrame implements View, AutoCloseable{
     private boolean gameWon = false;
     private boolean gameDraw = false;
     private JTextArea scoreBoard ; 
-    private JButton resetScores;
+    private JButton resetScore;
     public JTextArea gameGuide; 
     private JPanel north ;
     private JPanel center ;
@@ -56,6 +56,7 @@ public class GUIView extends JFrame implements View, AutoCloseable{
         this.score = new int[2];
         score[0] = 0 ;
         score[1] = 0 ;
+        buttons = new JButton[3][3];
         initGUI();
         gameGuide.setText("Host goes first");
         scoreBoard.setText("HOST "+score[0]+" : "+score[1]+" CLIENT");
@@ -67,10 +68,9 @@ public class GUIView extends JFrame implements View, AutoCloseable{
     public void initGUI(){
         //initialize variables and components
         reset = new JButton("Reset Game"); 
-        buttons = new JButton[3][3];
         turn = new JOptionPane(); 
         scoreBoard = new JTextArea(); 
-        resetScores = new JButton("reset scores "); 
+        resetScore = new JButton("reset scores "); 
         gameGuide = new JTextArea("WELCOME TO ONLINE TICTACTOE"); 
 
         //set layout JComponent
@@ -97,6 +97,7 @@ public class GUIView extends JFrame implements View, AutoCloseable{
         //Buttons constructor - CENTER
         //init reset  button
         resetButton();
+        resetScoresButton();
         //init buttons for X O locations
         initButton();
             
@@ -112,7 +113,7 @@ public class GUIView extends JFrame implements View, AutoCloseable{
 
         //South panel: Start game + reset scores
         south.add(reset); 
-        south.add(resetScores);
+        south.add(resetScore);
 
         //add components to Container
         add(north);
@@ -128,23 +129,28 @@ public class GUIView extends JFrame implements View, AutoCloseable{
     public void parseData(DataPackage data) throws IOException { 
         if (data.getCommand().equals("RESET")){
             resetGame();
-            setCurrentPlayer(Player.X);
             return ;
-        }  
-
+        } else if (data.getCommand().equals("RESETSCORE")){
+            resetScores();
+            return ;
+        }
         if (!isChosen(data.getX(),data.getY())){
             setButton(data);
-        } 
-        if (data.getCommand().equals("X") || data.getCommand().equals("O")) {
-            setWin();
-            addScore(data.getPlayer());
-            endGame(data.getPlayer());
+         
+            System.out.println(data.getCommand().equals("X"));
+            if (data.getCommand().equals("X") || data.getCommand().equals("O")) {
+                System.out.println("139 - GUIView");
+                setWin();
+                System.out.println("ENDING GAME ");
+                endGame(data.getPlayer());
+                addScore(data.getPlayer());
+            }
+
+            if (data.getCommand().equals("DRAW")){
+                setDraw();
+                endGame(data.getPlayer());
+            }
         }
-        if (data.getCommand().equals("DRAW")){
-            setDraw();
-            endGame(data.getPlayer());
-        }
-    
     } 
 
     
@@ -230,17 +236,15 @@ public class GUIView extends JFrame implements View, AutoCloseable{
            public void propertyChange(PropertyChangeEvent event ) { 
                //set data package to send reset request
                DataPackage dataButton = new DataPackage(4,4,"RESET",player);
-
                gameGuide.setText("Host goes first");
                String property = event.getPropertyName(); 
 
                if ("text" == property ){
                    if (serverPresenter != null ) { 
                        try { 
-                           resetGame();
-                           System.out.println("reseting in server");
                            serverPresenter.move(dataButton);
                            serverPresenter.resetGame();
+                           resetGame();
                        } catch (IOException e) { 
                            e.printStackTrace();
                            System.out.println("exception at 113 - GUI");
@@ -248,21 +252,62 @@ public class GUIView extends JFrame implements View, AutoCloseable{
                        
                    } else if (clientPresenter != null ){ 
                        try  {
-                           resetGame();
-                           System.out.println("reseting in client");
                            clientPresenter.move(dataButton);
                            clientPresenter.resetGame();
+                           resetGame();
                        } catch (IOException e){ 
                            e.printStackTrace();
                        }
                    
                    }
                }
-               setCurrentPlayer(Player.X);
            }
        });
-
     }
+
+    /**
+     * init Reset Score Button
+     */
+    public void resetScoresButton(){
+        resetScore.addActionListener( (e) -> { 
+            resetScore.setText("RESETING.....");
+            resetScore.setText("Reset Score");
+            
+        });
+        resetScore.addPropertyChangeListener(new PropertyChangeListener() { 
+           @Override
+           public void propertyChange(PropertyChangeEvent event ) { 
+               //set data package to send reset request
+               DataPackage dataButton = new DataPackage(4,4,"RESETSCORE",player);
+               gameGuide.setText("Score Reset");
+               String property = event.getPropertyName(); 
+
+               if ("text" == property ){
+                   if (serverPresenter != null ) { 
+                       try { 
+                           System.out.println("reseting in server");
+                           serverPresenter.move(dataButton);
+                           resetScores();
+                       } catch (IOException e) { 
+                           e.printStackTrace();
+                           System.out.println("exception at 113 - GUI");
+                       }
+                       
+                   } else if (clientPresenter != null ){ 
+                       try  {
+                           System.out.println("reseting in client");
+                           clientPresenter.move(dataButton);
+                           resetScores();
+                       } catch (IOException e){ 
+                           e.printStackTrace();
+                       }
+                   
+                   }
+               }
+           }
+       });
+    }
+
   //********************SET METHODS******************
    
     /**
@@ -272,7 +317,7 @@ public class GUIView extends JFrame implements View, AutoCloseable{
      */
     public void setButton(DataPackage data) { 
         if (data.getPlayer() == getCurrentPlayer()){
-            if (data.getCommand() != ""){
+            if (!data.getCommand().equals("") ){
                 this.gameGuide.setText(data.getCommand());
             }
             this.buttons[data.getX()][data.getY()].setText(data.getPlayer().getID());
@@ -339,13 +384,23 @@ public class GUIView extends JFrame implements View, AutoCloseable{
      * reset the game board
      */
     public void resetGame(){
-       for (int i = 0 ; i < 3 ; i ++) {
-           for (int j = 0 ; j < 3 ; j ++) { 
-               buttons[i][j].setText(" ");
-           }
-       }
-       this.gameWon = false;
-       this.gameDraw = false;
+        for (int i = 0 ; i < 3 ; i ++) {
+            for (int j = 0 ; j < 3 ; j ++) { 
+                buttons[i][j].setText(" ");
+            }
+        }
+        this.gameWon = false;
+        this.gameDraw = false;
+        setCurrentPlayer(Player.X);
+    }
+
+    /**
+     * reset scores 
+     */
+    public void resetScores(){
+        score[0] = 0 ;
+        score[1] = 0 ;
+        scoreBoard.setText("HOST "+score[0]+" : "+score[1]+" CLIENT");
     }
 
     /**
@@ -359,8 +414,6 @@ public class GUIView extends JFrame implements View, AutoCloseable{
             score[1]++;
             scoreBoard.setText("HOST "+score[0]+" : "+score[1]+" CLIENT");
         }
-        gameWon = false;
-        gameDraw = false;
     }
 
   //******************CLOSE-ENDGAME-SHOWGAME*****************
@@ -378,9 +431,9 @@ public class GUIView extends JFrame implements View, AutoCloseable{
      */
     public void endGame(Player winner){ 
         if (gameWon) { 
-            gameGuide.setText("Game Over \n Player "+(winner == Player.X ? "Host" : "Client")+" won");
+            this.gameGuide.setText("Game Over \n Player "+(winner == Player.X ? "Host" : "Client")+" won");
         } else if (gameDraw){ 
-            gameGuide.setText("Game Draw, No one wins ");
+            this.gameGuide.setText("Game Draw, No one wins ");
         }
         gameWon = false;
         gameDraw = false;
